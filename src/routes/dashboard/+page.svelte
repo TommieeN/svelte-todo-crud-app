@@ -1,7 +1,8 @@
 <script>
-  import { db } from "../../lib/firebase/firebase"
+  import Todoitem from "../../components/Todoitem.svelte";
+import { db } from "../../lib/firebase/firebase"
   import { authHandlers, authStore } from "../../store/store";
-  import { getDoc, doc, setDoc } from "@firebase/firestore";
+  import { doc, setDoc } from "@firebase/firestore";
     let todoList = [];
     let currTodo = ""
     let error = false
@@ -79,22 +80,7 @@
         </p>
         {/if}
         {#each todoList as todo, index}
-        <div class="todo">
-            <p>
-                {index + 1}. {todo}
-            </p>
-            <div class="actions">
-                <!-- svelte-ignore a11y-no-static-element-interactions -->
-                <i on:click={() => {
-                    editTodo(index)
-                    }} on:keydown={() => {}} 
-                    class="fa-regular fa-pen-to-square"></i>
-                <!-- svelte-ignore a11y-no-static-element-interactions -->
-                <i on:click={() => {
-                    removeTodo(index)
-                    }} on:keydown={() => {}} class="fa-regular fa-trash-can"></i>
-            </div>
-        </div>
+            <Todoitem todo={todo} index={index} removeTodo={removeTodo} editTodo={editTodo} />
         {/each}
     </main>
     <div class={"enterTodo " + (error ? "errorBorder" : "")}>
@@ -171,21 +157,13 @@
         font-size: 1.3rem;
     }
 
-    .actions i {
-        cursor: pointer;
-    }
-
-    .actions i:hover {
-        color: coral;
-    }
-
     .errorBorder {
         border-color:  coral !important;
     }
 
     .enterTodo {
         display: flex;
-        align-items: center;
+        align-items: stretch;
         border: 1px solid #0891b2;
         border-radius: 5px;
         overflow: hidden;

@@ -1,7 +1,22 @@
 <script>
-    let todoList = ["Do the groceries"];
+  import { db } from "../../lib/firebase/firebase"
+  import { authHandlers, authStore } from "../../store/store";
+  import { getDoc, doc, setDoc } from "@firebase/firestore";
+    let todoList = [];
     let currTodo = ""
     let error = false
+
+    // authStore.subscribe(curr => {
+    //     todoList = curr.data.todos;
+    // })
+
+    authStore.subscribe(curr => {
+    if (curr.data && Array.isArray(curr.data.todos)) {
+        todoList = curr.data.todos;
+    } else {
+        todoList = []; // Default to an empty array if the structure is unexpected
+    }
+})
 
     function addTodo() {
         error = false
@@ -26,16 +41,33 @@
         })
         todoList = newTodoList
     }
+
+    async function saveTodos() {
+        try {
+            const userRef = doc(db, "users", $authStore.user.uid)
+            await setDoc(
+                userRef,
+            {
+                todos: todoList,
+            },
+            { merge: true }
+            )
+        } catch (err) {
+            console.log("There was an error saving your informatioin")
+        }
+    }
+
 </script>
 
+{#if !$authStore.loading}
 <div class="mainContainer">
     <div class="headerContainer">
         <h1>Todo List</h1>
         <div class="headerButtons">
-        <button>
+        <button on:click={saveTodos} >
             <i class="fa-regular fa-floppy-disk"></i><p>Save</p>
         </button>
-        <button>
+        <button on:click={authHandlers.logout}>
             <i class="fa-solid fa-right-from-bracket"></i><p>Logout</p>
         </button>
     </div>
@@ -43,7 +75,7 @@
     <main>
         {#if todoList.length === 0}
         <p>
-            You have nothing to do
+            You have nothing to do!
         </p>
         {/if}
         {#each todoList as todo, index}
@@ -70,6 +102,7 @@
         <button on:click={addTodo}>ADD</button>
     </div>
 </div>
+{/if}
 
 <style>
     .mainContainer {
